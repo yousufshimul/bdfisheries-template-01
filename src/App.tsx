@@ -10,6 +10,8 @@ import { Footer } from './components/Footer';
 import { Post } from './data/mockData';
 import { generate50FisheryPosts } from './data/posts50';
 import { Layers, X, Loader2 } from 'lucide-react';
+import { StudentsBatchPage } from './components/StudentsBatchPage';
+import { FishMarketPage } from './components/FishMarketPage';
 
 export function App() {
   const [posts, setPosts] = useState<Post[]>(() => generate50FisheryPosts());
@@ -124,9 +126,9 @@ export function App() {
       type: newPostData.type || 'general',
       category: newPostData.category || 'পরামর্শ',
       author: newPostData.author || {
-        name: 'সোহাগ হোসেন (আপনি)',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-        tagline: 'মৎস্য উদ্যোক্তা',
+        name: 'yousuf',
+        avatar: '/images/yousuf_profile.png',
+        tagline: 'মৎস্য উদ্যোক্তা ও পরিচালক',
         isVerified: true,
         date: 'এখন মাত্র'
       },
@@ -162,20 +164,26 @@ export function App() {
       {/* 2. MAIN CONTAINER */}
       <div className="max-w-[1240px] w-full mx-auto px-2 sm:px-4 py-3 sm:py-4 flex-1">
 
-        {/* 3-COLUMN QUORA-STYLE FORUM FEED */}
-        <div className="flex justify-between items-start gap-4 lg:gap-5">
-          
-          {/* LEFT SIDEBAR (Sticky on Tablet & Desktop) */}
-          <aside className="hidden md:block w-[200px] lg:w-[220px] shrink-0 sticky top-[72px] max-h-[calc(100vh-85px)] overflow-y-auto no-scrollbar">
-            <LeftSidebar 
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleSelectCategory}
-              onOpenCreateModal={() => handleOpenModal('post')}
-            />
-          </aside>
+        {/* CONDITIONAL VIEW: IF SPACES / STUDENTS TAB OR MARKET IS ACTIVE */}
+        {activeNav === 'spaces' ? (
+          <StudentsBatchPage onBackToHome={() => setActiveNav('home')} />
+        ) : activeNav === 'market' ? (
+          <FishMarketPage onBackToHome={() => setActiveNav('home')} />
+        ) : (
+          /* 3-COLUMN QUORA-STYLE FORUM FEED */
+          <div className="flex justify-between items-start gap-4 lg:gap-5">
+            
+            {/* LEFT SIDEBAR (Sticky on Tablet & Desktop) */}
+            <aside className="hidden md:block w-[200px] lg:w-[220px] shrink-0 sticky top-[72px] max-h-[calc(100vh-85px)] overflow-y-auto no-scrollbar">
+              <LeftSidebar 
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleSelectCategory}
+                onOpenCreateModal={() => handleOpenModal('post')}
+              />
+            </aside>
 
-          {/* MIDDLE FEED (Main Scrollable Timeline) */}
-          <main className="flex-1 max-w-[660px] min-w-0 w-full">
+            {/* MIDDLE FEED (Main Scrollable Timeline) */}
+            <main className="flex-1 max-w-[660px] min-w-0 w-full">
             
             {/* Create Post Action Box */}
             <CreatePostBox onOpenModal={handleOpenModal} />
@@ -306,10 +314,11 @@ export function App() {
 
           {/* RIGHT SIDEBAR (Sticky on Desktop) */}
           <aside className="hidden lg:block w-[280px] xl:w-[300px] shrink-0 sticky top-[72px] max-h-[calc(100vh-85px)] overflow-y-auto no-scrollbar">
-            <RightSidebar />
+            <RightSidebar onOpenMarketPrices={() => setActiveNav('market')} />
           </aside>
 
         </div>
+        )}
       </div>
 
       {/* MOBILE DRAWER SIDEBAR */}

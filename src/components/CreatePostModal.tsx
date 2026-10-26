@@ -234,12 +234,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#F4F8FA] p-2.5 sm:p-3 rounded-xl border border-slate-200">
             <div className="flex items-center gap-2">
               <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
+                src="/images/yousuf_profile.png" 
                 alt="user" 
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-sky-200 shadow-2xs"
               />
               <div>
-                <span className="text-xs sm:text-[13px] font-bold text-[#0B5A9C] block leading-tight">সোহাগ হোসেন</span>
+                <span className="text-xs sm:text-[13px] font-bold text-[#0B5A9C] block leading-tight">yousuf</span>
                 <span className="text-[10.5px] text-slate-400">মৎস্য উদ্যোক্তা</span>
               </div>
             </div>

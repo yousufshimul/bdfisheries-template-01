@@ -15,7 +15,7 @@ export const CreatePostBox: React.FC<CreatePostBoxProps> = ({ onOpenModal }) => 
       {/* Top row: Avatar + Modern placeholder button */}
       <div className="flex items-center gap-2 sm:gap-3">
         <img
-          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+          src="/images/yousuf_profile.png"
           alt="User Profile"
           className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-sky-100 shrink-0"
         />

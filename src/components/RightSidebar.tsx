@@ -64,7 +64,11 @@ const ADS_DATA: AdItem[] = [
   }
 ];
 
-export const RightSidebar: React.FC = () => {
+interface RightSidebarProps {
+  onOpenMarketPrices?: () => void;
+}
+
+export const RightSidebar: React.FC<RightSidebarProps> = ({ onOpenMarketPrices }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Auto-slide every 5 seconds
@@ -173,10 +177,12 @@ export const RightSidebar: React.FC = () => {
 
       {/* 2. FISH MARKET UPDATE / QUICK STATS */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4">
-        <h4 className="text-[14.5px] font-extrabold text-[#0B5A9C] pb-2 border-b border-slate-100 flex items-center gap-1.5">
-          <Award className="w-4.5 h-4.5 text-[#00A3E0]" />
-          <span>দৈনিক পাইকারি বাজার দর (কেজি)</span>
-        </h4>
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h4 className="text-[14.5px] font-extrabold text-[#0B5A9C] flex items-center gap-1.5">
+            <Award className="w-4.5 h-4.5 text-[#00A3E0]" />
+            <span>দৈনিক পাইকারি বাজার দর (কেজি)</span>
+          </h4>
+        </div>
         <div className="mt-2.5 space-y-2 text-[13px]">
           <div className="flex justify-between items-center py-1 border-b border-slate-50">
             <span className="text-[#1A2530] font-medium">রুই (১.৫ - ২ কেজি)</span>
@@ -190,10 +196,22 @@ export const RightSidebar: React.FC = () => {
             <span className="text-[#1A2530] font-medium">তেলাপিয়া (বড়)</span>
             <span className="font-extrabold text-[#0F9473]">৳২০০ - ২২০</span>
           </div>
-          <div className="flex justify-between items-center py-1">
+          <div className="flex justify-between items-center py-1 border-b border-slate-50">
             <span className="text-[#1A2530] font-medium">শিং ও মাগুর</span>
             <span className="font-extrabold text-[#0F9473]">৳৪৫০ - ৫৫০</span>
           </div>
+        </div>
+
+        {/* See More Link Button */}
+        <div className="pt-2.5 mt-1 border-t border-slate-100 flex items-center justify-between">
+          <span className="text-[11px] text-slate-400">আপডেট: ২৬ অক্টোবর</span>
+          <button
+            onClick={onOpenMarketPrices}
+            className="text-[12px] font-bold text-[#0B5A9C] hover:text-[#0F9473] flex items-center gap-1 transition group"
+          >
+            <span>See More / বিস্তারিত দেখুন</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </button>
         </div>
       </div>
 
