@@ -80,7 +80,16 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
-          <a href="#" className="flex items-center group select-none">
+          <a 
+            href="/" 
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveNav('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center group select-none"
+            title="বিডি ফিশারিজ হোম"
+          >
             <img 
               src="/images/bdfisheries_logo_tight.png" 
               alt="বিডি ফিশারিজ" 

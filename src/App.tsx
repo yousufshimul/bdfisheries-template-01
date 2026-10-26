@@ -331,14 +331,23 @@ export function App() {
           <div className="relative w-[300px] max-w-[85%] bg-white h-full shadow-2xl p-4 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-left duration-200">
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-2">
-                <div className="flex items-center gap-2">
+                <a 
+                  href="/" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveNav('home');
+                    setMobileSidebarOpen(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="flex items-center gap-2"
+                >
                   <img 
                     src="/images/bdfisheries_logo_tight.png" 
                     alt="Logo" 
                     className="h-8 w-auto object-contain"
                   />
                   <span className="font-extrabold text-[#0B5A9C] text-[15px]">ক্যাটাগরি</span>
-                </div>
+                </a>
                 <button 
                   onClick={() => setMobileSidebarOpen(false)}
                   className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition"

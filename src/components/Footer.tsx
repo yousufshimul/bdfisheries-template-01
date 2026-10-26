@@ -21,13 +21,17 @@ export const Footer: React.FC = () => {
           
           {/* Col 1: Brand Info & Tagline */}
           <div className="space-y-3">
-            <div className="bg-white p-2 rounded-xl inline-block shadow-xs">
+            <a 
+              href="/" 
+              className="bg-white p-2 rounded-xl inline-block shadow-xs transition-transform hover:scale-102"
+              title="বিডি ফিশারিজ হোম"
+            >
               <img 
                 src="/images/bdfisheries_logo_tight.png" 
                 alt="বিডি ফিশারিজ লোগো" 
                 className="h-10 w-auto object-contain"
               />
-            </div>
+            </a>
             <p className="text-xs text-white/80 leading-relaxed">
               বিডি ফিশারিজ বাংলাদেশের সর্ববৃহৎ মৎস্য প্রশিক্ষণ কেন্দ্র ও উন্মুক্ত সামাজিক প্ল্যাটফর্ম। আধুনিক প্রযুক্তিনির্ভর মাছ চাষের প্রসার ও চাষীদের ক্ষমতায়ন আমাদের মূল লক্ষ্য।
             </p>
