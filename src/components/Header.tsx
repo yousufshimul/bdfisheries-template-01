@@ -61,8 +61,8 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'home', icon: Home, tooltip: 'হোম' },
     { id: 'following', icon: Compass, tooltip: 'অনুসরণ' },
     { id: 'answers', icon: Edit3, tooltip: 'উত্তর দিন' },
-    { id: 'spaces', icon: Users2, tooltip: 'স্পেস / কমিউনিটি' },
-    { id: 'notifications', icon: Bell, badge: '৪', tooltip: 'বিজ্ঞপ্তি' },
+    { id: 'spaces', icon: Users2, tooltip: 'স্পেস / শিক্ষার্থী ও ব্যাচ' },
+    { id: 'notifications', icon: Bell, badge: '8', tooltip: 'বিজ্ঞপ্তি' },
   ];
 
   return (

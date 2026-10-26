@@ -73,7 +73,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <Bell className={`w-5 h-5 ${activeNav === 'notifications' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
           <span className="text-[10px] mt-0.5">বিজ্ঞপ্তি</span>
           <span className="absolute top-1 right-3.5 bg-[#0F9473] text-white text-[9px] font-bold px-1 rounded-full min-w-[14px] text-center">
-            ৪
+            8
           </span>
         </button>
       </div>

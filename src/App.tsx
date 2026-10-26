@@ -12,6 +12,7 @@ import { generate50FisheryPosts } from './data/posts50';
 import { Layers, X, Loader2 } from 'lucide-react';
 import { StudentsBatchPage } from './components/StudentsBatchPage';
 import { FishMarketPage } from './components/FishMarketPage';
+import { NotificationsCenter } from './components/NotificationsCenter';
 
 export function App() {
   const [posts, setPosts] = useState<Post[]>(() => generate50FisheryPosts());
@@ -182,14 +183,17 @@ export function App() {
               />
             </aside>
 
-            {/* MIDDLE FEED (Main Scrollable Timeline) */}
+            {/* MIDDLE FEED OR NOTIFICATIONS CENTER (Main Scrollable Timeline) */}
             <main className="flex-1 max-w-[660px] min-w-0 w-full">
-            
-            {/* Create Post Action Box */}
-            <CreatePostBox onOpenModal={handleOpenModal} />
+              {activeNav === 'notifications' ? (
+                <NotificationsCenter onBackToHome={() => setActiveNav('home')} />
+              ) : (
+                <>
+                  {/* Create Post Action Box */}
+                  <CreatePostBox onOpenModal={handleOpenModal} />
 
-            {/* Feed Filter Bar (Horizontally scrollable with smooth touch) */}
-            <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 px-3 sm:px-3.5 py-1.5 sm:py-2 mb-3 sm:mb-3.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar text-xs shadow-2xs">
+                  {/* Feed Filter Bar (Horizontally scrollable with smooth touch) */}
+                  <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 px-3 sm:px-3.5 py-1.5 sm:py-2 mb-3 sm:mb-3.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar text-xs shadow-2xs">
               <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                 <button
                   onClick={() => handleSelectFeedType('all')}
@@ -309,6 +313,8 @@ export function App() {
                   সবগুলো পোস্ট দেখুন
                 </button>
               </div>
+            )}
+              </>
             )}
           </main>
 
