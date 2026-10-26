@@ -2,6 +2,7 @@ export interface Post {
   id: string;
   type: 'general' | 'image' | 'video' | 'faq' | 'consultation' | 'sale' | 'job';
   category: string;
+  categories?: string[];
   author: {
     name: string;
     avatar: string;

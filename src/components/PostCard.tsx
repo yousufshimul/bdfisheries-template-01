@@ -104,12 +104,26 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onSelectCategory }) =>
                   <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00A3E0] fill-[#00A3E0]/20 shrink-0" />
                 )}
                 <span className="text-slate-300 text-xs hidden xs:inline">•</span>
-                <button 
-                  onClick={() => onSelectCategory && onSelectCategory(post.category)}
-                  className="text-[12px] sm:text-[13px] text-[#0B5A9C] hover:text-[#00A3E0] font-bold hover:underline truncate"
-                >
-                  {post.category}
-                </button>
+                {post.categories && post.categories.length > 1 ? (
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {post.categories.map((c, i) => (
+                      <button 
+                        key={i}
+                        onClick={() => onSelectCategory && onSelectCategory(c)}
+                        className="text-[11.5px] sm:text-[12.5px] text-[#0B5A9C] hover:text-[#00A3E0] font-bold hover:underline"
+                      >
+                        {c}{i < (post.categories?.length || 0) - 1 ? ',' : ''}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => onSelectCategory && onSelectCategory(post.category)}
+                    className="text-[12px] sm:text-[13px] text-[#0B5A9C] hover:text-[#00A3E0] font-bold hover:underline truncate"
+                  >
+                    {post.category}
+                  </button>
+                )}
               </div>
               <p className="text-[11.5px] sm:text-[12.5px] text-slate-500 leading-tight truncate">
                 {post.author.tagline} • <span className="text-slate-400">{post.author.date}</span>

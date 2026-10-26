@@ -31,9 +31,13 @@ export function App() {
   // Filter posts based on Category, Feed Type Tab, and Search Query
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
-      // Category filter
-      if (selectedCategory && post.category !== selectedCategory) {
-        return false;
+      // Category filter (supports single or multiple categories per post)
+      if (selectedCategory) {
+        const matchesPrimary = post.category === selectedCategory;
+        const matchesMultiple = post.categories?.includes(selectedCategory);
+        if (!matchesPrimary && !matchesMultiple) {
+          return false;
+        }
       }
       // Feed type filter
       if (selectedFeedType === 'faq' && post.type !== 'faq') return false;

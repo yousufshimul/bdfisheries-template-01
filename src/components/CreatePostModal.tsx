@@ -1,12 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, 
   Edit3, 
   Image as ImageIcon, 
   HelpCircle, 
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  Check,
+  GraduationCap, 
+  Users, 
+  Fish, 
+  UserCheck, 
+  Wheat, 
+  Wrench, 
+  MessageSquareText, 
+  Image, 
+  ShoppingBag, 
+  Home, 
+  MapPin, 
+  Activity, 
+  Truck, 
+  FlaskConical
 } from 'lucide-react';
 import { CATEGORIES, Post } from '../data/mockData';
+
+// Map icon strings to Lucide components for each category in dropdown
+const categoryIconMap: Record<string, React.ElementType> = {
+  GraduationCap,
+  Users,
+  Fish,
+  UserCheck,
+  Wheat,
+  Wrench,
+  HelpCircle,
+  MessageSquareText,
+  Image,
+  ShoppingBag,
+  Home,
+  MapPin,
+  Activity,
+  Truck,
+  FlaskConical
+};
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -23,8 +58,11 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'post' | 'media' | 'need'>(defaultTab);
 
-  // Form states
-  const [category, setCategory] = useState(CATEGORIES[0].label);
+  // Multi-select categories state
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([CATEGORIES[0].label]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -34,14 +72,48 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [location, setLocation] = useState('');
 
   // Sync tab when opened with defaultTab
-  React.useEffect(() => {
+  useEffect(() => {
     setActiveTab(defaultTab);
     if (defaultTab === 'need') {
       setPostType('consultation');
     }
   }, [defaultTab, isOpen]);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   if (!isOpen) return null;
+
+  // Toggle category in multi-select list
+  const toggleCategory = (catLabel: string) => {
+    if (selectedCategories.includes(catLabel)) {
+      // Keep at least one category selected
+      if (selectedCategories.length > 1) {
+        setSelectedCategories(selectedCategories.filter(c => c !== catLabel));
+      }
+    } else {
+      setSelectedCategories([...selectedCategories, catLabel]);
+    }
+  };
+
+  const removeCategoryChip = (catLabel: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedCategories.length > 1) {
+      setSelectedCategories(selectedCategories.filter(c => c !== catLabel));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +124,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
     else if (activeTab === 'need') finalType = 'consultation';
     else finalType = postType;
 
+    const primaryCategory = selectedCategories[0] || CATEGORIES[0].label;
+
     const newPost: Partial<Post> = {
       type: finalType,
-      category,
+      category: primaryCategory,
+      categories: selectedCategories,
       title: title.trim() || undefined,
       question: finalType === 'faq' || finalType === 'consultation' ? (title.trim() || content.slice(0, 80) + '...?') : undefined,
       content,
@@ -83,17 +158,18 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
     setPrice('');
     setPhone('');
     setLocation('');
+    setIsDropdownOpen(false);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-xs">
       <div 
-        className="bg-white rounded-2xl w-full max-w-[620px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200 border border-slate-100"
+        className="bg-white rounded-2xl w-full max-w-[620px] shadow-2xl overflow-visible flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200 border border-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Authority #0B5A9C */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 bg-[#0B5A9C] text-white">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 bg-[#0B5A9C] text-white rounded-t-2xl shrink-0">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#00A3E0]" />
             <span className="font-extrabold text-[15px] sm:text-[16.5px]">নতুন পোস্ট বা ফোরাম আলোচনা</span>
@@ -107,7 +183,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         </div>
 
         {/* 3 Main Action Sub-Tabs */}
-        <div className="grid grid-cols-3 border-b border-slate-200 text-center font-bold text-[13px] sm:text-[14px] bg-[#F4F8FA]">
+        <div className="grid grid-cols-3 border-b border-slate-200 text-center font-bold text-[13px] sm:text-[14px] bg-[#F4F8FA] shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('post')}
@@ -154,28 +230,125 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         {/* Modal Form */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-3 sm:space-y-4">
           
-          {/* User badge + Category selector */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#F4F8FA] p-2.5 sm:p-3 rounded-xl border border-slate-200">
+          {/* User badge + Multi-Select Modern Category Dropdown */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#F4F8FA] p-2.5 sm:p-3 rounded-xl border border-slate-200">
             <div className="flex items-center gap-2">
               <img 
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
                 alt="user" 
-                className="w-7 h-7 rounded-full object-cover border"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-sky-200 shadow-2xs"
               />
-              <span className="text-xs font-bold text-[#0B5A9C]">সোহাগ হোসেন</span>
+              <div>
+                <span className="text-xs sm:text-[13px] font-bold text-[#0B5A9C] block leading-tight">সোহাগ হোসেন</span>
+                <span className="text-[10.5px] text-slate-400">মৎস্য উদ্যোক্তা</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-slate-500 font-medium">ক্যাটাগরি:</span>
-              <select 
-                value={category} 
-                onChange={(e) => setCategory(e.target.value)}
-                className="bg-white border border-slate-300 text-[#0B5A9C] font-bold py-1 px-2.5 rounded-lg text-xs outline-none focus:border-[#00A3E0]"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.label}>{c.label}</option>
-                ))}
-              </select>
+            {/* Custom Multi-Select Dropdown Container */}
+            <div className="relative flex-1 sm:max-w-[340px]" ref={dropdownRef}>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-500 hidden sm:inline whitespace-nowrap">ক্যাটাগরি:</span>
+                
+                {/* Multi-Select Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`w-full flex items-center justify-between gap-1.5 bg-white hover:bg-sky-50/70 border text-xs sm:text-[13px] font-bold py-1.5 px-2.5 rounded-xl transition-all shadow-2xs outline-none ${
+                    isDropdownOpen 
+                      ? 'border-[#0B5A9C] ring-2 ring-[#0B5A9C]/15 text-[#0B5A9C]' 
+                      : 'border-slate-300 text-[#1A2530] hover:border-slate-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 flex-wrap min-w-0 overflow-hidden py-0.5">
+                    {/* Render Selected Categories Chips */}
+                    {selectedCategories.slice(0, 2).map((catName) => (
+                      <span 
+                        key={catName}
+                        className="inline-flex items-center gap-1 bg-sky-50 text-[#0B5A9C] border border-sky-200 px-2 py-0.5 rounded-lg text-[11px] font-bold"
+                      >
+                        <span className="truncate max-w-[85px] sm:max-w-[100px]">{catName}</span>
+                        {selectedCategories.length > 1 && (
+                          <X 
+                            onClick={(e) => removeCategoryChip(catName, e)} 
+                            className="w-3 h-3 hover:text-red-500 cursor-pointer"
+                          />
+                        )}
+                      </span>
+                    ))}
+                    {selectedCategories.length > 2 && (
+                      <span className="bg-[#0B5A9C] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-md">
+                        +{selectedCategories.length - 2}
+                      </span>
+                    )}
+                  </div>
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#0B5A9C]' : ''}`} />
+                </button>
+              </div>
+
+              {/* Multi-Select Dropdown Popover Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-full sm:w-[280px] bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-50 max-h-[300px] overflow-y-auto no-scrollbar animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between">
+                    <span>ক্যাটাগরি নির্বাচন করুন (একাধিক)</span>
+                    <span className="text-[#0B5A9C] font-extrabold">{selectedCategories.length}টি নির্বাচিত</span>
+                  </div>
+
+                  <div className="space-y-0.5 px-1.5">
+                    {CATEGORIES.map((cat) => {
+                      const IconComp = categoryIconMap[cat.icon] || HelpCircle;
+                      const isSelected = selectedCategories.includes(cat.label);
+
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => toggleCategory(cat.label)}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs sm:text-[13px] transition-colors ${
+                            isSelected
+                              ? 'bg-sky-50/90 text-[#0B5A9C] font-bold'
+                              : 'text-slate-700 hover:bg-slate-100 hover:text-[#0B5A9C] font-medium'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {/* Checkbox Icon */}
+                            <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected 
+                                ? 'bg-[#0B5A9C] border-[#0B5A9C] text-white' 
+                                : 'border-slate-300 bg-white'
+                            }`}>
+                              {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                            </div>
+
+                            <span className={`p-1 rounded-lg shrink-0 ${
+                              isSelected ? 'bg-sky-100 text-[#0B5A9C]' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              <IconComp className="w-3.5 h-3.5" />
+                            </span>
+                            <span className="truncate">{cat.label}</span>
+                          </div>
+
+                          <span className={`text-[10.5px] px-1.5 py-0.2 rounded-full font-semibold shrink-0 ${
+                            isSelected ? 'bg-sky-100 text-[#0B5A9C]' : 'bg-slate-100 text-slate-400'
+                          }`}>
+                            {cat.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Done button inside dropdown for easy mobile closing */}
+                  <div className="p-2 border-t border-slate-100 mt-1 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="bg-[#0B5A9C] hover:bg-[#084577] text-white text-xs font-bold px-3 py-1 rounded-lg transition"
+                    >
+                      সম্পন্ন
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
