@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
 import { RightSidebar } from './components/RightSidebar';
@@ -9,7 +9,7 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { Footer } from './components/Footer';
 import { Post } from './data/mockData';
 import { generate50FisheryPosts } from './data/posts50';
-import { Layers, X } from 'lucide-react';
+import { Layers, X, Loader2 } from 'lucide-react';
 
 export function App() {
   const [posts, setPosts] = useState<Post[]>(() => generate50FisheryPosts());
@@ -20,6 +20,13 @@ export function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalDefaultTab, setModalDefaultTab] = useState<'post' | 'media' | 'need'>('post');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Pagination states: Show 15 posts initially, then load 15 more upon scroll
+  const [visibleCount, setVisibleCount] = useState<number>(15);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+  const [isCategoryLoading, setIsCategoryLoading] = useState<boolean>(false);
+
+  const loaderRef = useRef<HTMLDivElement | null>(null);
 
   // Filter posts based on Category, Feed Type Tab, and Search Query
   const filteredPosts = useMemo(() => {
@@ -48,6 +55,59 @@ export function App() {
       return true;
     });
   }, [posts, selectedCategory, selectedFeedType, searchQuery]);
+
+  // Paginated visible posts slice
+  const displayedPosts = useMemo(() => {
+    return filteredPosts.slice(0, visibleCount);
+  }, [filteredPosts, visibleCount]);
+
+  const hasMorePosts = visibleCount < filteredPosts.length;
+
+  // Handle Category selection with a fast simple spinning loader before content changes
+  const handleSelectCategory = useCallback((cat: string | null) => {
+    setIsCategoryLoading(true);
+    setVisibleCount(15);
+    setTimeout(() => {
+      setSelectedCategory(cat);
+      setIsCategoryLoading(false);
+    }, 380); // Realistic short smooth delay
+  }, []);
+
+  const handleSelectFeedType = useCallback((type: string) => {
+    setIsCategoryLoading(true);
+    setVisibleCount(15);
+    setTimeout(() => {
+      setSelectedFeedType(type);
+      setIsCategoryLoading(false);
+    }, 300);
+  }, []);
+
+  // Infinite Scroll Observer: Detects when bottom is reached and loads +15 posts with spinning loader
+  useEffect(() => {
+    if (!hasMorePosts || isLoadingMore || isCategoryLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 15);
+            setIsLoadingMore(false);
+          }, 650); // Clean smooth loading simulation
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    const currentLoader = loaderRef.current;
+    if (currentLoader) {
+      observer.observe(currentLoader);
+    }
+
+    return () => {
+      if (currentLoader) observer.unobserve(currentLoader);
+    };
+  }, [hasMorePosts, isLoadingMore, isCategoryLoading]);
 
   const handleOpenModal = (tab: 'post' | 'media' | 'need' = 'post') => {
     setModalDefaultTab(tab);
@@ -105,7 +165,7 @@ export function App() {
           <aside className="hidden md:block w-[200px] lg:w-[220px] shrink-0 sticky top-[72px] max-h-[calc(100vh-85px)] overflow-y-auto no-scrollbar">
             <LeftSidebar 
               selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
+              onSelectCategory={handleSelectCategory}
               onOpenCreateModal={() => handleOpenModal('post')}
             />
           </aside>
@@ -120,7 +180,7 @@ export function App() {
             <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 px-3 sm:px-3.5 py-1.5 sm:py-2 mb-3 sm:mb-3.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar text-xs shadow-2xs">
               <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                 <button
-                  onClick={() => setSelectedFeedType('all')}
+                  onClick={() => handleSelectFeedType('all')}
                   className={`px-3 py-1.5 rounded-lg sm:rounded-xl font-bold transition text-xs sm:text-[13px] ${
                     selectedFeedType === 'all'
                       ? 'bg-[#0B5A9C] text-white shadow-2xs'
@@ -130,7 +190,7 @@ export function App() {
                   সকল ফিড
                 </button>
                 <button
-                  onClick={() => setSelectedFeedType('faq')}
+                  onClick={() => handleSelectFeedType('faq')}
                   className={`px-3 py-1.5 rounded-lg sm:rounded-xl font-bold transition text-xs sm:text-[13px] ${
                     selectedFeedType === 'faq'
                       ? 'bg-[#0B5A9C] text-white shadow-2xs'
@@ -140,7 +200,7 @@ export function App() {
                   FAQ / প্রশ্ন
                 </button>
                 <button
-                  onClick={() => setSelectedFeedType('consultation')}
+                  onClick={() => handleSelectFeedType('consultation')}
                   className={`px-3 py-1.5 rounded-lg sm:rounded-xl font-bold transition text-xs sm:text-[13px] ${
                     selectedFeedType === 'consultation'
                       ? 'bg-[#0B5A9C] text-white shadow-2xs'
@@ -150,7 +210,7 @@ export function App() {
                   পরামর্শ ও রোগ
                 </button>
                 <button
-                  onClick={() => setSelectedFeedType('media')}
+                  onClick={() => handleSelectFeedType('media')}
                   className={`px-3 py-1.5 rounded-lg sm:rounded-xl font-bold transition text-xs sm:text-[13px] ${
                     selectedFeedType === 'media'
                       ? 'bg-[#0F9473] text-white shadow-2xs'
@@ -160,7 +220,7 @@ export function App() {
                   ছবি ও ভিডিও
                 </button>
                 <button
-                  onClick={() => setSelectedFeedType('market')}
+                  onClick={() => handleSelectFeedType('market')}
                   className={`px-3 py-1.5 rounded-lg sm:rounded-xl font-bold transition text-xs sm:text-[13px] ${
                     selectedFeedType === 'market'
                       ? 'bg-[#0B5A9C] text-white shadow-2xs'
@@ -175,7 +235,7 @@ export function App() {
                 <div className="flex items-center gap-1 bg-sky-100 text-[#0B5A9C] text-[11px] sm:text-[11.5px] font-bold px-2.5 py-0.5 sm:py-1 rounded-full shrink-0">
                   <span className="max-w-[100px] truncate">{selectedCategory}</span>
                   <button 
-                    onClick={() => setSelectedCategory(null)} 
+                    onClick={() => handleSelectCategory(null)} 
                     className="hover:bg-sky-200 rounded-full p-0.5"
                     title="ক্যাটাগরি রিসেট"
                   >
@@ -185,15 +245,44 @@ export function App() {
               )}
             </div>
 
-            {/* List of Posts */}
-            {filteredPosts.length > 0 ? (
-              filteredPosts.map((post) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post} 
-                  onSelectCategory={setSelectedCategory}
-                />
-              ))
+            {/* Content Area: Category Changing Simple Spinning Loader */}
+            {isCategoryLoading ? (
+              <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-12 text-center shadow-2xs flex flex-col items-center justify-center space-y-3">
+                <Loader2 className="w-8 h-8 text-[#0B5A9C] animate-spin" />
+                <p className="text-xs sm:text-[13.5px] font-semibold text-slate-500">
+                  কন্টেন্ট ও পোস্ট লোড হচ্ছে...
+                </p>
+              </div>
+            ) : displayedPosts.length > 0 ? (
+              <>
+                {/* List of Posts */}
+                {displayedPosts.map((post) => (
+                  <PostCard 
+                    key={post.id} 
+                    post={post} 
+                    onSelectCategory={handleSelectCategory}
+                  />
+                ))}
+
+                {/* Bottom Observer Target & Spinning Loader for Infinite Scroll (+15 items) */}
+                {hasMorePosts ? (
+                  <div 
+                    ref={loaderRef} 
+                    className="py-6 flex flex-col items-center justify-center space-y-2 text-center"
+                  >
+                    <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-2xs">
+                      <Loader2 className="w-4 h-4 text-[#0B5A9C] animate-spin" />
+                      <span className="text-xs font-bold text-slate-600">
+                        পরবর্তী ১৫টি পোস্ট লোড হচ্ছে...
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-6 text-center text-xs text-slate-400 font-medium">
+                    🎉 আপনি সব সাম্প্রতিক ফোরাম পোস্ট দেখেছেন!
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-8 text-center text-slate-500 shadow-2xs">
                 <Layers className="w-10 h-10 mx-auto text-slate-400 mb-2 stroke-1" />
@@ -202,17 +291,13 @@ export function App() {
                   অন্য কোনো ক্যাটাগরি নির্বাচন করুন বা নতুন পোস্ট প্রকাশ করুন।
                 </p>
                 <button
-                  onClick={() => { setSelectedCategory(null); setSelectedFeedType('all'); setSearchQuery(''); }}
+                  onClick={() => { handleSelectCategory(null); handleSelectFeedType('all'); setSearchQuery(''); }}
                   className="mt-3 inline-flex items-center gap-1 text-xs text-[#0B5A9C] font-bold hover:underline"
                 >
                   সবগুলো পোস্ট দেখুন
                 </button>
               </div>
             )}
-
-            <div className="py-6 text-center text-xs text-slate-400 font-medium">
-              🎉 আপনি সব সাম্প্রতিক ফোরাম পোস্ট দেখেছেন!
-            </div>
           </main>
 
           {/* RIGHT SIDEBAR (Sticky on Desktop) */}
@@ -223,7 +308,7 @@ export function App() {
         </div>
       </div>
 
-      {/* MOBILE DRAWER SIDEBAR (Smooth Off-canvas) */}
+      {/* MOBILE DRAWER SIDEBAR */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div 
@@ -251,7 +336,7 @@ export function App() {
               <LeftSidebar 
                 selectedCategory={selectedCategory}
                 onSelectCategory={(cat) => {
-                  setSelectedCategory(cat);
+                  handleSelectCategory(cat);
                   setMobileSidebarOpen(false);
                 }}
                 onOpenCreateModal={() => {
