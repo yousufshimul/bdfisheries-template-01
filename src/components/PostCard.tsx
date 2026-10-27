@@ -20,6 +20,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Post } from '../data/mockData';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface PostCardProps {
   post: Post;
@@ -177,7 +178,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onSelectCategory }) =>
                   {post.author.name}
                 </span>
                 {post.author.isVerified && (
-                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00A3E0] fill-[#00A3E0]/20 shrink-0" />
+                  <VerifiedBadge className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1877F2] shrink-0" />
                 )}
                 <span className="text-slate-300 text-xs hidden xs:inline">•</span>
                 {post.categories && post.categories.length > 1 ? (

@@ -19,6 +19,7 @@ import {
   Institute, 
   StudentProfile 
 } from '../data/studentsBatchData';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface StudentsBatchPageProps {
   onBackToHome?: () => void;
@@ -319,7 +320,7 @@ export const StudentsBatchPage: React.FC<StudentsBatchPageProps> = () => {
                                     {st.name}
                                   </h4>
                                   {st.isVerified && (
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-sky-500 shrink-0 fill-sky-50" />
+                                    <VerifiedBadge className="w-3.5 h-3.5 text-[#1877F2] shrink-0" />
                                   )}
                                 </div>
                                 <p className="text-[11.5px] font-medium text-[#0F9473] truncate">
@@ -391,7 +392,7 @@ export const StudentsBatchPage: React.FC<StudentsBatchPageProps> = () => {
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-lg font-bold">{selectedProfileModal.name}</h3>
                     {selectedProfileModal.isVerified && (
-                      <CheckCircle2 className="w-4 h-4 text-white fill-sky-400" />
+                      <VerifiedBadge className="w-4 h-4 text-white shrink-0" />
                     )}
                   </div>
                   <p className="text-xs text-sky-100">{selectedProfileModal.role}</p>
