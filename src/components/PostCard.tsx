@@ -17,7 +17,13 @@ import {
   Send,
   Copy,
   Check,
-  ExternalLink
+  ExternalLink,
+  EyeOff,
+  Bell,
+  BellOff,
+  Flag,
+  UserX,
+  Code
 } from 'lucide-react';
 import { Post } from '../data/mockData';
 import { VerifiedBadge } from './VerifiedBadge';
@@ -39,23 +45,31 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onSelectCategory }) =>
   const [commentInput, setCommentInput] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isNotifActive, setIsNotifActive] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const shareDropdownRef = useRef<HTMLDivElement>(null);
+  const optionsDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close share menu on outside click
+  // Close share & options menus on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (shareDropdownRef.current && !shareDropdownRef.current.contains(event.target as Node)) {
         setIsShareOpen(false);
       }
+      if (optionsDropdownRef.current && !optionsDropdownRef.current.contains(event.target as Node)) {
+        setIsOptionsOpen(false);
+      }
     }
-    if (isShareOpen) {
+    if (isShareOpen || isOptionsOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isShareOpen]);
+  }, [isShareOpen, isOptionsOpen]);
 
   const postUrl = typeof window !== 'undefined' ? `${window.location.origin}/#post-${post.id}` : `https://bdfisheries.com/#post-${post.id}`;
   const shareText = encodeURIComponent(`${post.title || post.question || 'বিডি ফিশারিজ পোস্ট'} - বিডি ফিশারিজ প্ল্যাটফর্মে দেখুন`);
@@ -159,9 +173,39 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onSelectCategory }) =>
     }
   };
 
+  if (isHidden) {
+    return (
+      <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-4 mb-3 sm:mb-4 flex items-center justify-between gap-3 text-xs text-slate-500 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <EyeOff className="w-4 h-4 text-slate-400" />
+          <span>এই পোস্টটি সাময়িকভাবে আপনার ফিড থেকে লুকিয়ে রাখা হয়েছে।</span>
+        </div>
+        <button
+          onClick={() => setIsHidden(false)}
+          className="text-[#0B5A9C] font-bold hover:underline"
+        >
+          পূর্বাবস্থায় ফেরান (Undo)
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <article className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs mb-3 sm:mb-4 overflow-hidden transition-all hover:shadow-md">
+    <article className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-2xs mb-3 sm:mb-4 overflow-hidden transition-all hover:shadow-md relative">
       
+      {/* Toast Notice banner for action feedback */}
+      {actionNotice && (
+        <div className="bg-[#0B5A9C] text-white text-xs px-4 py-2 font-medium flex items-center justify-between animate-in fade-in">
+          <span>{actionNotice}</span>
+          <button 
+            onClick={() => setActionNotice(null)}
+            className="hover:opacity-80 font-bold ml-2"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* 1. Header: Author info, category, date */}
       <div className="p-3.5 sm:p-5 pb-2">
         <div className="flex items-start justify-between gap-1.5 sm:gap-2">
@@ -208,11 +252,154 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onSelectCategory }) =>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 relative" ref={optionsDropdownRef}>
             {getPostTypeBadge()}
-            <button className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100">
+            <button 
+              onClick={() => setIsOptionsOpen(!isOptionsOpen)}
+              className={`p-1.5 rounded-full transition ${
+                isOptionsOpen 
+                  ? 'bg-slate-200 text-slate-800' 
+                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+              }`}
+              title="পোস্টের অপশনসমূহ"
+            >
               <MoreHorizontal className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </button>
+
+            {/* Facebook-style 3-Dot Options Dropdown */}
+            {isOptionsOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-[260px] sm:w-[280px] bg-white rounded-2xl shadow-xl border border-slate-200/90 py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-700">
+                
+                {/* 1. Save post */}
+                <button
+                  onClick={() => {
+                    setIsSaved(!isSaved);
+                    setActionNotice(isSaved ? 'পোস্টটি সংরক্ষিত তালিকা থেকে সরানো হয়েছে' : 'পোস্টটি সেভ করা হয়েছে');
+                    setIsOptionsOpen(false);
+                    setTimeout(() => setActionNotice(null), 3000);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 transition flex items-start gap-3 group"
+                >
+                  <Bookmark className={`w-5 h-5 shrink-0 mt-0.5 ${isSaved ? 'text-[#0B5A9C] fill-[#0B5A9C]' : 'text-slate-600'}`} />
+                  <div>
+                    <div className="text-[13px] font-bold text-slate-800 group-hover:text-[#0B5A9C]">
+                      {isSaved ? 'পোস্টটি আনসেভ করুন' : 'পোস্টটি সংরক্ষণ করুন (Save Post)'}
+                    </div>
+                    <div className="text-[11px] text-slate-400 leading-tight">
+                      ভবিষ্যতে সহজে খুঁজে পেতে আপনার সেভ তালিকায় রাখুন
+                    </div>
+                  </div>
+                </button>
+
+                {/* 2. Notifications toggle */}
+                <button
+                  onClick={() => {
+                    setIsNotifActive(!isNotifActive);
+                    setActionNotice(isNotifActive ? 'এই পোস্টের নোটিফিকেশন বন্ধ করা হয়েছে' : 'এই পোস্টের নতুন আপডেটের নোটিফিকেশন চালু হয়েছে');
+                    setIsOptionsOpen(false);
+                    setTimeout(() => setActionNotice(null), 3000);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 transition flex items-start gap-3 group"
+                >
+                  {isNotifActive ? (
+                    <BellOff className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <Bell className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <div className="text-[13px] font-bold text-slate-800 group-hover:text-[#0B5A9C]">
+                      {isNotifActive ? 'বিজ্ঞপ্তি বন্ধ করুন' : 'এই পোস্টের বিজ্ঞপ্তি চালু করুন'}
+                    </div>
+                    <div className="text-[11px] text-slate-400 leading-tight">
+                      নতুন কোনো মন্তব্য বা উত্তর আসলে নোটিফিকেশন পান
+                    </div>
+                  </div>
+                </button>
+
+                {/* 3. Copy link */}
+                <button
+                  onClick={() => {
+                    handleCopyLink();
+                    setActionNotice('পোস্টের লিঙ্ক কপি করা হয়েছে');
+                    setIsOptionsOpen(false);
+                    setTimeout(() => setActionNotice(null), 3000);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 transition flex items-start gap-3 group"
+                >
+                  <Copy className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[13px] font-bold text-slate-800 group-hover:text-[#0B5A9C]">
+                      লিংক কপি করুন (Copy Link)
+                    </div>
+                    <div className="text-[11px] text-slate-400 leading-tight">
+                      এই পোস্টটির ডিরেক্ট ওয়েব লিঙ্ক শেয়ার করতে কপি করুন
+                    </div>
+                  </div>
+                </button>
+
+                <div className="my-1.5 border-t border-slate-100" />
+
+                {/* 4. Hide post */}
+                <button
+                  onClick={() => {
+                    setIsHidden(true);
+                    setIsOptionsOpen(false);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 transition flex items-start gap-3 group"
+                >
+                  <EyeOff className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[13px] font-bold text-slate-800 group-hover:text-[#0B5A9C]">
+                      পোস্টটি লুকিয়ে রাখুন (Hide Post)
+                    </div>
+                    <div className="text-[11px] text-slate-400 leading-tight">
+                      আপনার নিউজ ফিডে এই ধরণের পোস্ট কম দেখতে পাবেন
+                    </div>
+                  </div>
+                </button>
+
+                {/* 5. Unfollow author */}
+                <button
+                  onClick={() => {
+                    setActionNotice(`${post.author.name}-কে আনফলো করা হয়েছে`);
+                    setIsOptionsOpen(false);
+                    setTimeout(() => setActionNotice(null), 3000);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 transition flex items-start gap-3 group"
+                >
+                  <UserX className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[13px] font-bold text-slate-800 group-hover:text-[#0B5A9C]">
+                      {post.author.name}-কে আনফলো করুন
+                    </div>
+                    <div className="text-[11px] text-slate-400 leading-tight">
+                      এই ব্যক্তির কোনো নতুন পোস্ট আপনার ফিডে আসবে না
+                    </div>
+                  </div>
+                </button>
+
+                {/* 6. Report post */}
+                <button
+                  onClick={() => {
+                    setActionNotice('পোস্টটি পর্যালোচনার জন্য রিপোর্ট করা হয়েছে');
+                    setIsOptionsOpen(false);
+                    setTimeout(() => setActionNotice(null), 3000);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-rose-50 text-rose-600 transition flex items-start gap-3 group"
+                >
+                  <Flag className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[13px] font-bold text-rose-600">
+                      রিপোর্ট করুন (Find support or report)
+                    </div>
+                    <div className="text-[11px] text-rose-400 leading-tight">
+                      ভুল তথ্য বা নীতিমালার পরিপন্থী কন্টেন্ট বিষয়ে জানান
+                    </div>
+                  </div>
+                </button>
+
+              </div>
+            )}
           </div>
 
         </div>
